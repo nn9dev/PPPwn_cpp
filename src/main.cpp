@@ -15,6 +15,10 @@
 #include "exploit.h"
 #include "web.h"
 
+int spray_num = 0x1000;
+int pin_num = 0x1000;
+int corrupt_num = 0x1;
+
 std::vector<uint8_t> readBinary(const std::string &filename) {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file) {
@@ -140,8 +144,16 @@ int main(int argc, char *argv[]) {
             integer("1-4097", groom_delay), \
             "PCAP buffer size in bytes, less than 100 indicates default value (usually 2MB)  (default: 0)" %
             option("-bs", "--buffer-size") & integer("bytes", buffer_size), \
-            "automatically retry when fails or timeout" % option("-a", "--auto-retry").set(retry), \
-            "don't wait one more PADI before starting" % option("-nw", "--no-wait-padi").set(no_wait_padi), \
+            "SPRAY_NUM is definitely a variable. (Default: 0x1000)" %
+            option("-sn", "--spray-num") & value("size", spray_num), \
+            "PIN_NUM also does something, though i have no idea what. (Default: 0x1000)" %
+            option("-pn", "--pin-num") & value("pin", pin_num), \
+            "CORRUPT_NUM is the amount of overflow packets sent to the PS4. (Default: 0x1)" %
+            option("-cn", "--corrupt-num") & value("size", corrupt_num), \
+            "automatically retry when fails or timeout" %
+            option("-a", "--auto-retry").set(retry), \
+            "don't wait one more PADI before starting" %
+            option("-nw", "--no-wait-padi").set(no_wait_padi), \
             "Use CPU for more precise sleep time (Only used when execution speed is too slow)" %
             option("-rs", "--real-sleep").set(real_sleep), \
             "start a web page" % option("--web").set(web_page), \
@@ -168,6 +180,8 @@ int main(int argc, char *argv[]) {
               << " auto-retry=" << (retry ? "on" : "off") << " no-wait-padi=" << (no_wait_padi ? "on" : "off")
               << " real_sleep=" << (real_sleep ? "on" : "off")
               << std::endl;
+
+    std::cout << "[+] NUM args: SPRAY num=" << spray_num << " PIN num=" << pin_num << " CORRUPT num=" << corrupt_num << std::endl;
 
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT, signal_handler);
