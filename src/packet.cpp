@@ -14,9 +14,11 @@
 
 #include "exploit.h"
 
+/*
 #define SPRAY_NUM 0x1000
 #define PIN_NUM 0x1000
 #define CORRUPT_NUM 0x1
+*/
 
 #define HOLE_START 0x400
 #define HOLE_SPACE 0x10
@@ -32,7 +34,7 @@
 
 const static std::string SOURCE_MAC = "41:41:41:41:41:41";
 const static std::string SOURCE_IPV4 = "41.41.41.41";
-const static std::string SOURCE_IPV6 = "fe80::4141:4141:4141:4141";
+//const static std::string SOURCE_IPV6 = "fe80::4141:4141:4141:4141";
 
 const static std::string TARGET_IPV4 = "42.42.42.42";
 

@@ -18,6 +18,7 @@
 int spray_num = 0x1000;
 int pin_num = 0x1000;
 int corrupt_num = 0x1;
+std::string SOURCE_IPV6 = "fe80::9f9f:41ff:9f9f:41ff";
 
 std::vector<uint8_t> readBinary(const std::string &filename) {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
@@ -116,6 +117,36 @@ static void signal_handler(int sig_num) {
     exit(sig_num);
 }
 
+// u bet ur ass i didn't write this
+bool isInteger(const std::string& str) {
+    return !str.empty() && std::all_of(str.begin(), str.end(), [](char c) {
+        return std::isdigit(static_cast<unsigned char>(c));
+    });
+}
+
+bool parsenums(std::string& argstring, int& argnum, int defaultVal){
+    if(argstring.empty() != true) {     // if it's not empty
+        if (argstring.size() >= 2 && argstring.compare(0, 2, "0x") == 0) {  // The string starts with "0x"
+            argnum = std::stoi(argstring, nullptr, 16);
+            //std::cout << "assigned " << argstring << std::endl;
+            return true;
+        } else {
+            if (isInteger(argstring)) {
+                argnum = std::stoi(argstring, nullptr, 10);
+                //std::cout << "assigned " << argstring << std::endl;
+                return true;
+            }
+            return false;
+        }
+    }
+    else {
+        argnum = defaultVal;
+        //std::cout << "assigned " << defaultVal << std::endl;
+        return false;
+    }
+    return false;
+}
+
 int main(int argc, char *argv[]) {
     using namespace clipp;
     std::cout << "[+] PPPwn++ - PlayStation 4 PPPoE RCE by theflow" << std::endl;
@@ -130,6 +161,10 @@ int main(int argc, char *argv[]) {
     bool no_wait_padi = false;
     bool web_page = false;
     bool real_sleep = false;
+    bool use_old_ipv6 = false;
+    std::string spray_num_str = "";
+    std::string pin_num_str = "";
+    std::string corrupt_num_str = "";
 
     auto cli = (
             ("network interface" % required("-i", "--interface") & value("interface", interface), \
@@ -144,12 +179,14 @@ int main(int argc, char *argv[]) {
             integer("1-4097", groom_delay), \
             "PCAP buffer size in bytes, less than 100 indicates default value (usually 2MB)  (default: 0)" %
             option("-bs", "--buffer-size") & integer("bytes", buffer_size), \
-            "SPRAY_NUM is definitely a variable. (Default: 0x1000)" %
-            option("-sn", "--spray-num") & value("size", spray_num), \
-            "PIN_NUM also does something, though i have no idea what. (Default: 0x1000)" %
-            option("-pn", "--pin-num") & value("pin", pin_num), \
-            "CORRUPT_NUM is the amount of overflow packets sent to the PS4. (Default: 0x1)" %
-            option("-cn", "--corrupt-num") & value("size", corrupt_num), \
+            "SPRAY_NUM is definitely a variable. Enter in hex OR decimal. (Default: 0x1000 / 4096)" %
+            option("-sn", "--spray-num") & value("size", spray_num_str), \
+            "PIN_NUM also does something, though i have no idea what. Enter in hex OR decimal. (Default: 0x1000 or 4096)" %
+            option("-pn", "--pin-num") & value("pin", pin_num_str), \
+            "CORRUPT_NUM is the amount of overflow packets sent to the PS4. Enter in hex OR decimal. (Default: 0x1 or 1)" %
+            option("-cn", "--corrupt-num") & value("size", corrupt_num_str), \
+            "use the old IPv6 from TheFloW. some difficult consoles work better with this for whatever reason." %
+            option("--use-old-ipv6").set(use_old_ipv6), \
             "automatically retry when fails or timeout" %
             option("-a", "--auto-retry").set(retry), \
             "don't wait one more PADI before starting" %
@@ -175,10 +212,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    parsenums(spray_num_str,spray_num,0x1000);
+    parsenums(pin_num_str,pin_num,0x1000);
+    parsenums(corrupt_num_str,corrupt_num,0x1);
+
+    if (use_old_ipv6)
+        SOURCE_IPV6 = "fe80::4141:4141:4141:4141";
+
     std::cout << "[+] args: interface=" << interface << " fw=" << fw << " stage1=" << stage1 << " stage2=" << stage2
               << " timeout=" << timeout << " wait-after-pin=" << wait_after_pin << " groom-delay=" << groom_delay
               << " auto-retry=" << (retry ? "on" : "off") << " no-wait-padi=" << (no_wait_padi ? "on" : "off")
-              << " real_sleep=" << (real_sleep ? "on" : "off")
+              << " real_sleep=" << (real_sleep ? "on" : "off") << " use_old_ipv6=" << (use_old_ipv6 ? "on" : "off")
               << std::endl;
 
     std::cout << "[+] NUM args: SPRAY num=" << spray_num << " PIN num=" << pin_num << " CORRUPT num=" << corrupt_num << std::endl;
