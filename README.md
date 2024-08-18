@@ -1,6 +1,6 @@
 # PPPwn c++
 
-This is the C++ rewrite of [PPPwn](https://github.com/TheOfficialFloW/PPPwn)
+This is the C++ rewrite of [PPPwn](https://github.com/TheOfficialFloW/PPPwn) (with [additions](https://github.com/nn9dev/PPPwn_cpp#on-_num-options)!)
 
 # Features
 
@@ -12,10 +12,10 @@ This is the C++ rewrite of [PPPwn](https://github.com/TheOfficialFloW/PPPwn)
 
 # Nightly build
 
-You can download the latest build from [nightly.link](https://nightly.link/xfangfang/PPPwn_cpp/workflows/ci.yaml/main?status=completed).
+You can download the latest build from [nightly.link](https://nightly.link/nn9dev/PPPwn_cpp/workflows/ci.yaml/main?status=completed).
 
-For Windows users, you need to install [npcap](https://npcap.com) before run this program.
-There are lots of GUI wrapper for pppwn_cpp, it's better to use them if you are not familiar with command line.
+For Windows users, you need to install [npcap](https://npcap.com) before you run this program.
+There are lots of GUI wrappers for pppwn_cpp, it's better to use them if you are not familiar with command line.
 
 For macOS users, you need to run `sudo xattr -rd com.apple.quarantine <path-to-pppwn>` after download.
 Please refer to [#10](https://github.com/xfangfang/PPPwn_cpp/issues/10) for more information.
@@ -48,6 +48,10 @@ pppwn --interface en0 --fw 1100 --stage1 "stage1.bin" --stage2 "stage2.bin" --ti
 - `-wap` `--wait-after-pin`: the waiting time in seconds after first round CPU pinning (default: `1`)
 - `-gd` `--groom-delay`: wait for 1ms every `groom-delay` rounds during Heap grooming (default: `4`)
 - `-bs` `--buffer-size`: PCAP buffer size in bytes, less than 100 indicates default value (usually 2MB) (default: `0`)
+- `-sn` `--spray-num`: SPRAY_NUM increase can help reliability. Enter in hex OR decimal. (Default: 0x1000 or 4096)
+- `-pn` `--pin-num`: PIN_NUM is the time to wait on a core before proceeding with the exploit. Enter in hex OR decimal. (Default: 0x1000 or 4096)
+- `-cn` `--corrupt-num` : CORRUPT_NUM is the amount of overflow packets sent to the PS4. Enter in hex OR decimal. (Default: 0x1 or 1)
+- `--use-old-ipv6`: Use the old IPv6 from TheFloW. Some difficult consoles work better with this for whatever reason.
 - `-a` `--auto-retry`: automatically retry when fails or timeout
 - `-nw` `--no-wait-padi`: don't wait one more [PADI](https://en.wikipedia.org/wiki/Point-to-Point_Protocol_over_Ethernet#Client_to_server:_Initiation_(PADI)) before starting the exploit
 - `-rs` `--real-sleep`: use CPU for more precise sleep time (Only used when execution speed is too slow)
@@ -61,6 +65,16 @@ Supplement:
 3. For `--wait-after-pin`, according to [SiSTR0/PPPwn/pull/1](https://github.com/SiSTR0/PPPwn/pull/1) set this parameter to `20` helps to improve stability (not work for me), this option not used in web interface.
 4. For `--groom-delay`, This is an empirical value. The Python version of pppwn does not set any wait at Heap grooming, but if the C++ version does not add some wait, there is a probability of kernel panic on my ps4. You can set any value within 1-4097 (4097 is equivalent to not doing any wait).
 5. For `--buffer-size`, When running on low-end devices, this value can be set to reduce memory usage. I tested that setting it to 10240 can run normally, and the memory usage is about 3MB. (Note: A value that is too small may cause some packets to not be captured properly)
+
+
+### On _NUM options...
+With help from [Borris-ta](https://github.com/Borris-ta) and [DrYenyen](https://github.com/DrYenyen/), it has been found that changing some of the variables related to the PPPwn exploit can greatly increase success. For the purposes of this note, all values will be in ***HEX.*** If you'd like to quickly test values, you can use [PPwn-Tinker-GUI](https://github.com/DrYenyen/PPPwn-Tinker-GUI) on Windows or the [PPPwn_cpp CLI](https://github.com/nn9dev/PPPwn_cpp) directly on Linux. The values get set with the new `-sn`, `-pn`, and `-cn` flags above.
+
+SPRAY_NUM is 0x1000 in the original exploit. Brief testing shows that increasing this by steps of 0x50 up to around 0x1500 results in better reliability.
+
+PIN_NUM is 0x1000 in the original exploit. Its purpose is the time to wait on a core before proceeding with the exploit. Brief testing has shown this doesn't affect too much, so it's fine to leave this at default.
+
+CORRUPT_NUM is 0x1 in the original exploit. CORRUPT_NUM is the amout of malicious packets sent to the PS4. Breif testing shows increasing this results in much better reliability. Reccomended values are 0x1 0x2, 0x4, 0x6, 0x8, 0x10, 0x14, 0x20, 0x30, 0x40. Values too high may result in a crash.
 
 # Development
 
