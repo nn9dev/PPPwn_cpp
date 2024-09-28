@@ -51,7 +51,7 @@ pppwn --interface en0 --fw 1100 --stage1 "stage1.bin" --stage2 "stage2.bin" --ti
 - `-sn` `--spray-num`: SPRAY_NUM increase can help reliability. Enter in hex OR decimal. (Default: 0x1000 or 4096)
 - `-pn` `--pin-num`: PIN_NUM is the time to wait on a core before proceeding with the exploit. Enter in hex OR decimal. (Default: 0x1000 or 4096)
 - `-cn` `--corrupt-num` : CORRUPT_NUM is the amount of overflow packets sent to the PS4. Enter in hex OR decimal. (Default: 0x1 or 1)
-- `--use-old-ipv6`: Use the old IPv6 from TheFloW. Some difficult consoles work better with this for whatever reason.
+- `--ipv6`: Use your own ipv6. Doesn't check for correct formatting, use with caution. Can be useful for testing exploit parts or useful on difficult consoles.
 - `-a` `--auto-retry`: automatically retry when fails or timeout
 - `-nw` `--no-wait-padi`: don't wait one more [PADI](https://en.wikipedia.org/wiki/Point-to-Point_Protocol_over_Ethernet#Client_to_server:_Initiation_(PADI)) before starting the exploit
 - `-rs` `--real-sleep`: use CPU for more precise sleep time (Only used when execution speed is too slow)
