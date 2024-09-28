@@ -19,6 +19,7 @@ int spray_num = 0x1000;
 int pin_num = 0x1000;
 int corrupt_num = 0x1;
 std::string SOURCE_IPV6 = "fe80::9f9f:41ff:9f9f:41ff";
+long long sin6_addr_pt2 = 0x9f9f41ff9f9f41ffLL;
 
 std::vector<uint8_t> readBinary(const std::string &filename) {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
@@ -125,7 +126,7 @@ bool isInteger(const std::string& str) {
 }
 
 bool parsenums(std::string& argstring, int& argnum, int defaultVal){
-    if(argstring.empty() != true) {     // if it's not empty
+    if(!argstring.empty()) {     // if it's not empty
         if (argstring.size() >= 2 && argstring.compare(0, 2, "0x") == 0) {  // The string starts with "0x"
             argnum = std::stoi(argstring, nullptr, 16);
             //std::cout << "assigned " << argstring << std::endl;
@@ -161,10 +162,10 @@ int main(int argc, char *argv[]) {
     bool no_wait_padi = false;
     bool web_page = false;
     bool real_sleep = false;
-    bool use_old_ipv6 = false;
     std::string spray_num_str = "";
     std::string pin_num_str = "";
     std::string corrupt_num_str = "";
+    std::string custom_ipv6 = "";
 
     auto cli = (
             ("network interface" % required("-i", "--interface") & value("interface", interface), \
@@ -185,8 +186,8 @@ int main(int argc, char *argv[]) {
             option("-pn", "--pin-num") & value("pin", pin_num_str), \
             "CORRUPT_NUM is the amount of overflow packets sent to the PS4. Enter in hex OR decimal. (Default: 0x1 or 1)" %
             option("-cn", "--corrupt-num") & value("size", corrupt_num_str), \
-            "use the old IPv6 from TheFloW. some difficult consoles work better with this for whatever reason." %
-            option("--use-old-ipv6").set(use_old_ipv6), \
+            "use your own ipv6. doesn't check for correct formatting, use with caution.\n" %
+            option("--ipv6") & value("ipv6", custom_ipv6), \
             "automatically retry when fails or timeout" %
             option("-a", "--auto-retry").set(retry), \
             "don't wait one more PADI before starting" %
@@ -216,13 +217,10 @@ int main(int argc, char *argv[]) {
     parsenums(pin_num_str,pin_num,0x1000);
     parsenums(corrupt_num_str,corrupt_num,0x1);
 
-    if (use_old_ipv6)
-        SOURCE_IPV6 = "fe80::4141:4141:4141:4141";
-
     std::cout << "[+] args: interface=" << interface << " fw=" << fw << " stage1=" << stage1 << " stage2=" << stage2
               << " timeout=" << timeout << " wait-after-pin=" << wait_after_pin << " groom-delay=" << groom_delay
               << " auto-retry=" << (retry ? "on" : "off") << " no-wait-padi=" << (no_wait_padi ? "on" : "off")
-              << " real_sleep=" << (real_sleep ? "on" : "off") << " use_old_ipv6=" << (use_old_ipv6 ? "on" : "off")
+              << " real_sleep=" << (real_sleep ? "on" : "off") << " ipv6=" << SOURCE_IPV6
               << std::endl;
 
     std::cout << "[+] NUM args: SPRAY num=" << spray_num << " PIN num=" << pin_num << " CORRUPT num=" << corrupt_num << std::endl;
@@ -237,6 +235,14 @@ int main(int argc, char *argv[]) {
     if (stage1_data.empty()) return 1;
     auto stage2_data = readBinary(stage2);
     if (stage2_data.empty()) return 1;
+
+    // set options
+    std::cout << "custom ipv6 (main.cpp): " << custom_ipv6 << std::endl;
+    std::cout << "SOURCE_IPV6 (main.cpp): " << SOURCE_IPV6 << std::endl;
+    if(!custom_ipv6.empty())
+        exploit->setIpv6(custom_ipv6);
+    else
+        exploit->setIpv6(SOURCE_IPV6);
     exploit->setStage1(std::move(stage1_data));
     exploit->setStage2(std::move(stage2_data));
     exploit->setTimeout(timeout);
