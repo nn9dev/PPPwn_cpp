@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
     if(!custom_ipv6.empty())
         exploit->setIpv6(custom_ipv6);
     else
-        exploit->setIpv6(SOURCE_IPV6);
+        exploit->setIpv6("fe80::9f9f:41ff:9f9f:41ff");
     exploit->setStage1(std::move(stage1_data));
     exploit->setStage2(std::move(stage2_data));
     exploit->setTimeout(timeout);
